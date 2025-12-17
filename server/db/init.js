@@ -1,0 +1,35 @@
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
+import pool from '../config/db.js';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+
+const schemaPath = path.join(__dirname, 'schema.sql');
+const seedsPath = path.join(__dirname, 'seeds.sql');
+
+const schemaSql = fs.readFileSync(schemaPath, { encoding: 'utf8' });
+const seedsSql = fs.readFileSync(seedsPath, { encoding: 'utf8' });
+
+const runMigrations = async () => {
+  try {
+    console.log(pool)
+    console.log('Starting database initialization...');
+
+    console.log('Building tables...');
+    await pool.query(schemaSql);
+    console.log('Tables created.');
+
+    console.log('Seeding data...');
+    await pool.query(seedsSql);
+    console.log('Data seeded.');
+
+    console.log('Database initialized successfully.');
+  } catch (err) {
+    console.error('Migration failed:', err);
+  } finally {
+    pool.end();
+  }
+};
+
+runMigrations();
