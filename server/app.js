@@ -7,6 +7,7 @@ import { fileURLToPath } from 'url';
 
 import authRouter from './routes/auth.js';
 import indexRouter from './routes/index.js';
+import documentsRouter from './routes/documents.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -22,6 +23,7 @@ app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/api/login', authRouter);
+app.use('/api/documents', documentsRouter);
 app.use('/api', indexRouter);
 
 export default app;
