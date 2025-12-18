@@ -1,179 +1,94 @@
-import { useState, useEffect, useCallback } from "react";
+import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import api from "../services/api";
-import useAuth from "../context/useAuth";
-import Can from "../components/Can";
+import {
+  AppShell,
+  Group,
+  Button,
+  Title,
+  Text,
+  Container,
+  Tabs,
+  Modal,
+} from "@mantine/core";
+import { useDisclosure } from "@mantine/hooks";
+import useAuth from "../context/auth/useAuth";
+import useData from "../context/data/useData";
 import DocumentList from "../components/DocumentList";
-import CreateDocumentForm from "../components/CreateDocumentForm";
 import UserList from "../components/UserList";
+import CreateDocumentForm from "../components/CreateDocumentForm";
+import Can from "../components/Can";
 
 const Dashboard = () => {
   const { user, logout } = useAuth();
+  const { fetchDocuments, fetchUsers } = useData();
   const navigate = useNavigate();
-  const [documents, setDocuments] = useState([]);
-  const [documentsError, setDocumentsError] = useState("");
-  const [showCreateForm, setShowCreateForm] = useState(false);
-  const [showAdminPanel, setShowAdminPanel] = useState(false);
+  const [modalOpen, { open, close }] = useDisclosure(false);
 
-  const fetchDocuments = useCallback(() => {
-    api
-      .get("/documents")
-      .then((res) => {
-        setDocuments(res.data.documents);
-        setDocumentsError("");
-      })
-      .catch((err) => {
-        if (err.response && err.response.status === 403) {
-          setDocumentsError("You do not have permission to view this list.");
-        } else {
-          setDocumentsError("Failed to load documents.");
-        }
-      });
-  }, []);
-
-  const handleDeleteDocument = async (id) => {
-    if (!confirm("Are you sure?")) return;
-
-    try {
-      await api.delete(`/documents/${id}`);
-      setDocuments((docs) => docs.filter((d) => d.id !== id));
-    } catch {
-      alert("Failed to delete. You might not have permission!");
+  useEffect(() => {
+    fetchDocuments();
+    if (user.permissions.includes("read:users")) {
+      fetchUsers();
     }
-  };
-
-  const handleLogout = () => {
-    logout();
-    navigate("/login");
-  };
-
-  const handleDocumentCreated = async () => {
-    await fetchDocuments();
-    setShowCreateForm(false);
-  };
-
-  useEffect(() => fetchDocuments(), [fetchDocuments]);
+  }, [fetchDocuments, fetchUsers, user]);
 
   return (
-    <div style={{ padding: "20px" }}>
-      <header
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          marginBottom: "20px",
-        }}
-      >
-        <h1>IAM Simulation Dashboard</h1>
-        <button onClick={handleLogout}>Log Out</button>
-      </header>
-
-      <section
-        style={{
-          backgroundColor: "#f0f0f0",
-          padding: "15px",
-          borderRadius: "8px",
-          marginBottom: "20px",
-        }}
-      >
-        <h2>Current User Profile</h2>
-        <p>
-          <strong>Username:</strong> {user.username}
-        </p>
-        <p>
-          <strong>Role:</strong>{" "}
-          <span style={{ color: "blue", fontWeight: "bold" }}>{user.role}</span>
-        </p>
-        <p>
-          <strong>Permissions:</strong>
-        </p>
-        <ul>
-          {user.permissions.map((p) => (
-            <li key={p}>{p}</li>
-          ))}
-        </ul>
-      </section>
-
-      <section>
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-          }}
-        >
-          <h2>Documents</h2>
-
-          <Can perform="write:documents">
-            {!showCreateForm && (
-              <button
-                onClick={() => setShowCreateForm(true)}
-                style={{
-                  backgroundColor: "green",
-                  color: "white",
-                  padding: "10px",
-                }}
-              >
-                + Create New Document
-              </button>
-            )}
-          </Can>
-        </div>
-
-        {showCreateForm && (
-          <CreateDocumentForm
-            onSuccess={handleDocumentCreated}
-            onCancel={() => setShowCreateForm(false)}
-          />
-        )}
-
-        <DocumentList
-          documents={documents}
-          error={documentsError}
-          handleDeleteDocument={handleDeleteDocument}
-        />
-      </section>
-
-      <Can perform="read:users">
-        <section
-          style={{
-            marginTop: "40px",
-            borderTop: "2px dashed #ccc",
-            paddingTop: "20px",
-          }}
-        >
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
-            }}
-          >
-            <h2>⚠️ Admin Control Panel</h2>
-            <button onClick={() => setShowAdminPanel(!showAdminPanel)}>
-              {showAdminPanel ? "Hide Panel" : "Manage Users"}
-            </button>
-          </div>
-
-          {showAdminPanel && (
-            <div
-              style={{
-                marginTop: "20px",
-                backgroundColor: "#fff5f5",
-                padding: "15px",
-                border: "1px solid #feb2b2",
-                borderRadius: "8px",
+    <AppShell header={{ height: 60 }} padding="md">
+      <AppShell.Header>
+        <Group h="100%" px="md" justify="space-between">
+          <Group>
+            <Title order={3}>IAM Dashboard</Title>
+          </Group>
+          <Group>
+            <Text size="sm" visibleFrom="sm">
+              Logged in as <strong>{user.username}</strong> ({user.role})
+            </Text>
+            <Button
+              variant="light"
+              color="red"
+              onClick={() => {
+                logout();
+                navigate("/login");
               }}
             >
-              <p style={{ fontSize: "0.9em", color: "#c53030" }}>
-                <strong>Security Clearance:</strong> {user.role.toUpperCase()}
-              </p>
+              Logout
+            </Button>
+          </Group>
+        </Group>
+      </AppShell.Header>
+
+      <AppShell.Main>
+        <Container size="xl">
+          <Tabs defaultValue="documents">
+            <Tabs.List mb="md">
+              <Tabs.Tab value="documents">Confidential Documents</Tabs.Tab>
+              <Can perform="read:users">
+                <Tabs.Tab value="admin" color="red">
+                  Admin Panel
+                </Tabs.Tab>
+              </Can>
+            </Tabs.List>
+
+            <Tabs.Panel value="documents">
+              <Group justify="space-between" mb="lg">
+                <Title order={4}>Files</Title>
+                <Can perform="write:documents">
+                  <Button onClick={open}>+ New Document</Button>
+                </Can>
+              </Group>
+              <DocumentList />
+            </Tabs.Panel>
+
+            <Tabs.Panel value="admin">
               <UserList />
-            </div>
-          )}
-        </section>
-      </Can>
-    </div>
+            </Tabs.Panel>
+          </Tabs>
+        </Container>
+
+        <Modal opened={modalOpen} onClose={close} title="Create New Document">
+          <CreateDocumentForm onSuccess={close} />
+        </Modal>
+      </AppShell.Main>
+    </AppShell>
   );
 };
 

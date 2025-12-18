@@ -1,36 +1,44 @@
+import { SimpleGrid, Card, Text, Group, Badge, Button } from "@mantine/core";
+import { IconTrash } from "@tabler/icons-react";
+import useData from "../context/data/useData";
 import Can from "./Can";
 
-const DocumentList = ({ documents, error, handleDeleteDocument }) => {
-  if (error) return <div style={{ color: "red" }}>{error}</div>;
+const DocumentList = () => {
+  const { documents, deleteDocument } = useData();
+
+  if (!documents.length) return <Text c="dimmed">No documents found.</Text>;
 
   return (
-    <div className="document-list">
-      <h3>Confidential Files</h3>
-      <ul>
-        {documents.map((doc) => (
-          <li
-            key={doc.id}
-            style={{
-              marginBottom: "10px",
-              border: "1px solid #ccc",
-              padding: "10px",
-            }}
-          >
-            <strong>{doc.title}</strong>
-            <p>{doc.content}</p>
+    <SimpleGrid cols={{ base: 1, sm: 2, lg: 3 }}>
+      {documents.map((doc) => (
+        <Card key={doc.id} shadow="sm" padding="lg" radius="md" withBorder>
+          <Group justify="space-between" mt="md" mb="xs">
+            <Text fw={500}>{doc.title}</Text>
+            <Badge color="blue" variant="light">
+              Confidential
+            </Badge>
+          </Group>
 
-            <Can perform="delete:documents">
-              <button
-                onClick={() => handleDeleteDocument(doc.id)}
-                style={{ backgroundColor: "#ff4444", color: "white" }}
-              >
-                Delete
-              </button>
-            </Can>
-          </li>
-        ))}
-      </ul>
-    </div>
+          <Text size="sm" c="dimmed" mb="lg" style={{ minHeight: "60px" }}>
+            {doc.content}
+          </Text>
+
+          <Can perform="delete:documents">
+            <Button
+              color="red"
+              fullWidth
+              variant="light"
+              leftSection={<IconTrash size={14} />}
+              onClick={() => {
+                if (confirm("Delete this file?")) deleteDocument(doc.id);
+              }}
+            >
+              Delete File
+            </Button>
+          </Can>
+        </Card>
+      ))}
+    </SimpleGrid>
   );
 };
 

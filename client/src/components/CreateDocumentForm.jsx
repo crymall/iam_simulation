@@ -1,83 +1,45 @@
-import { useState } from "react";
-import api from "../services/api";
+import { useState } from 'react';
+import { TextInput, Textarea, Button, Stack } from '@mantine/core';
+import useData from '../context/data/useData';
 
-const CreateDocumentForm = ({ onSuccess, onCancel }) => {
-  const [formData, setFormData] = useState({ title: "", content: "" });
-  const [error, setError] = useState("");
-  const [isSubmitting, setIsSubmitting] = useState(false);
+const CreateDocumentForm = ({ onSuccess }) => {
+  const { createDocument } = useData();
+  const [title, setTitle] = useState('');
+  const [content, setContent] = useState('');
+  const [documentsLoading, setDocumentsLoading] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setIsSubmitting(true);
-    setError("");
-
-    try {
-      await api.post("/documents", formData);
-      setFormData({ title: "", content: "" });
+    setDocumentsLoading(true);
+    const success = await createDocument({ title, content });
+    setDocumentsLoading(false);
+    
+    if (success && onSuccess) {
       onSuccess();
-    } catch (err) {
-      console.error(err);
-      setError("Failed to create document. Ensure you have permission.");
-    } finally {
-      setIsSubmitting(false);
     }
   };
 
   return (
-    <div
-      style={{
-        backgroundColor: "#e6fffa",
-        padding: "15px",
-        borderRadius: "8px",
-        marginBottom: "20px",
-        border: "1px solid #4fd1c5",
-      }}
-    >
-      <h3>New Document</h3>
-      {error && <p style={{ color: "red" }}>{error}</p>}
-
-      <form onSubmit={handleSubmit}>
-        <div style={{ marginBottom: "10px" }}>
-          <input
-            type="text"
-            placeholder="Document Title"
-            value={formData.title}
-            onChange={(e) =>
-              setFormData({ ...formData, title: e.target.value })
-            }
-            required
-            style={{ width: "95%", padding: "8px" }}
-          />
-        </div>
-        <div style={{ marginBottom: "10px" }}>
-          <textarea
-            placeholder="Content..."
-            value={formData.content}
-            onChange={(e) =>
-              setFormData({ ...formData, content: e.target.value })
-            }
-            required
-            rows="3"
-            style={{ width: "95%", padding: "8px" }}
-          />
-        </div>
-
-        <button type="submit" disabled={isSubmitting}>
-          {isSubmitting ? "Saving..." : "Save Document"}
-        </button>
-        <button
-          type="button"
-          onClick={onCancel}
-          style={{
-            marginLeft: "10px",
-            backgroundColor: "#ccc",
-            color: "black",
-          }}
-        >
-          Cancel
-        </button>
-      </form>
-    </div>
+    <form onSubmit={handleSubmit}>
+      <Stack>
+        <TextInput
+          label="Title"
+          placeholder="Q4 Report"
+          required
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+        />
+        <Textarea
+          label="Content"
+          placeholder="Confidential details..."
+          required
+          minRows={4}
+          value={content}
+          onChange={(e) => setContent(e.target.value)}
+        />
+        <Button type="submit" documentsLoading={documentsLoading}>Save Document</Button>
+      </Stack>
+    </form>
   );
 };
 

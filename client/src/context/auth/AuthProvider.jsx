@@ -1,11 +1,11 @@
 import { useState, useEffect, useEffectEvent } from "react";
 import { jwtDecode } from "jwt-decode";
-import api from "../services/api";
+import api from "../../services/api";
 import AuthContext from "./AuthContext";
 
 const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [documentsLoading, setDocumentsLoading] = useState(true);
 
   const logout = () => {
     localStorage.removeItem("token");
@@ -26,7 +26,7 @@ const AuthProvider = ({ children }) => {
         logout();
       }
     }
-    setLoading(false);
+    setDocumentsLoading(false);
   });
 
   useEffect(() => {
@@ -48,8 +48,8 @@ const AuthProvider = ({ children }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ user, login, logout, loading }}>
-      {!loading && children}
+    <AuthContext.Provider value={{ user, login, logout, documentsLoading }}>
+      {!documentsLoading && children}
     </AuthContext.Provider>
   );
 };

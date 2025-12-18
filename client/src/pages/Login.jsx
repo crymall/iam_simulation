@@ -1,52 +1,69 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import useAuth from '../context/useAuth';
+import { TextInput, PasswordInput, Button, Paper, Title, Container, Group, Text, Code } from '@mantine/core';
+import useAuth from '../context/auth/useAuth';
 
 const Login = () => {
-  const [formData, setFormData] = useState({ username: '', password: '' });
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  
   const { login } = useAuth();
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      await login(formData.username, formData.password);
+      await login(username, password);
       navigate('/dashboard');
     } catch {
-      setError('Invalid Credentials');
+      setError('Invalid credentials');
     }
   };
 
   return (
-    <div>
-      <h2>IAM Simulation Login</h2>
-      <form onSubmit={handleSubmit}>
-        <input 
-          type="text" 
-          placeholder="Username" 
-          value={formData.username}
-          onChange={e => setFormData({...formData, username: e.target.value})}
-        />
-        <input 
-          type="password" 
-          placeholder="Password" 
-          value={formData.password}
-          onChange={e => setFormData({...formData, password: e.target.value})}
-        />
-        <button type="submit">Log In</button>
-      </form>
-      {error && <p style={{color: 'red'}}>{error}</p>}
-      
-      <div style={{marginTop: '20px', fontSize: '0.8rem'}}>
-        <p><strong>Test Users:</strong></p>
-        <ul>
-          <li>alice_admin / password123</li>
-          <li>bob_editor / password123</li>
-          <li>charlie_view / password123</li>
-        </ul>
-      </div>
-    </div>
+    <Container size={420} my={40}>
+      <Title align="center" order={2}>IAM Simulation</Title>
+      <Text c="dimmed" size="sm" ta="center" mt={5}>
+        Please sign in to continue
+      </Text>
+
+      <Paper withBorder shadow="md" p={30} mt={30} radius="md">
+        <form onSubmit={handleSubmit}>
+          <TextInput 
+            label="Username" 
+            placeholder="alice_admin" 
+            required 
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+          />
+          <PasswordInput 
+            label="Password" 
+            placeholder="Your password" 
+            required 
+            mt="md" 
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+          />
+          
+          {error && <Text c="red" size="sm" mt="sm">{error}</Text>}
+
+          <Button fullWidth mt="xl" type="submit">
+            Sign in
+          </Button>
+        </form>
+      </Paper>
+
+      <Paper withBorder p="md" mt="lg" bg="gray.0">
+        <Text size="xs" fw={700} mb="xs">Test Accounts:</Text>
+        <Group gap="xs">
+           <Code>alice_admin</Code>
+           <Code>bob_editor</Code>
+           <Code>charlie_view</Code>
+        </Group>
+        <Text size="xs" mt="xs">Password for all: <Code>password123</Code></Text>
+      </Paper>
+    </Container>
   );
 };
 
