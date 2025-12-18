@@ -8,6 +8,7 @@ import { fileURLToPath } from 'url';
 import authRouter from './routes/auth.js';
 import indexRouter from './routes/index.js';
 import documentsRouter from './routes/documents.js';
+import usersRouter from './routes/users.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -24,6 +25,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/api/login', authRouter);
 app.use('/api/documents', documentsRouter);
+app.use('/api/users', usersRouter);
 app.use('/api', indexRouter);
 
 export default app;

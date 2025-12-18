@@ -1,16 +1,58 @@
+import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
+import api from "../services/api";
 import useAuth from "../context/useAuth";
 import Can from "../components/Can";
 import DocumentList from "../components/DocumentList";
+import CreateDocumentForm from "../components/CreateDocumentForm";
+import UserList from "../components/UserList";
 
 const Dashboard = () => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
+  const [documents, setDocuments] = useState([]);
+  const [documentsError, setDocumentsError] = useState("");
+  const [showCreateForm, setShowCreateForm] = useState(false);
+  const [showAdminPanel, setShowAdminPanel] = useState(false);
+
+  const fetchDocuments = useCallback(() => {
+    api
+      .get("/documents")
+      .then((res) => {
+        setDocuments(res.data.documents);
+        setDocumentsError("");
+      })
+      .catch((err) => {
+        if (err.response && err.response.status === 403) {
+          setDocumentsError("You do not have permission to view this list.");
+        } else {
+          setDocumentsError("Failed to load documents.");
+        }
+      });
+  }, []);
+
+  const handleDeleteDocument = async (id) => {
+    if (!confirm("Are you sure?")) return;
+
+    try {
+      await api.delete(`/documents/${id}`);
+      setDocuments((docs) => docs.filter((d) => d.id !== id));
+    } catch {
+      alert("Failed to delete. You might not have permission!");
+    }
+  };
 
   const handleLogout = () => {
     logout();
     navigate("/login");
   };
+
+  const handleDocumentCreated = async () => {
+    await fetchDocuments();
+    setShowCreateForm(false);
+  };
+
+  useEffect(() => fetchDocuments(), [fetchDocuments]);
 
   return (
     <div style={{ padding: "20px" }}>
@@ -63,22 +105,35 @@ const Dashboard = () => {
           <h2>Documents</h2>
 
           <Can perform="write:documents">
-            <button
-              style={{
-                backgroundColor: "green",
-                color: "white",
-                padding: "10px",
-              }}
-            >
-              + Create New Document
-            </button>
+            {!showCreateForm && (
+              <button
+                onClick={() => setShowCreateForm(true)}
+                style={{
+                  backgroundColor: "green",
+                  color: "white",
+                  padding: "10px",
+                }}
+              >
+                + Create New Document
+              </button>
+            )}
           </Can>
         </div>
 
-        <DocumentList />
+        {showCreateForm && (
+          <CreateDocumentForm
+            onSuccess={handleDocumentCreated}
+            onCancel={() => setShowCreateForm(false)}
+          />
+        )}
+
+        <DocumentList
+          documents={documents}
+          error={documentsError}
+          handleDeleteDocument={handleDeleteDocument}
+        />
       </section>
 
-      {/* Admin Only Area */}
       <Can perform="read:users">
         <section
           style={{
@@ -87,13 +142,35 @@ const Dashboard = () => {
             paddingTop: "20px",
           }}
         >
-          <h2>⚠️ Admin Control Panel</h2>
-          <p>
-            Only users with the <code>read:users</code> permission can see this
-            section.
-          </p>
-          <button>Manage Users</button>
-          <button style={{ marginLeft: "10px" }}>System Logs</button>
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+            }}
+          >
+            <h2>⚠️ Admin Control Panel</h2>
+            <button onClick={() => setShowAdminPanel(!showAdminPanel)}>
+              {showAdminPanel ? "Hide Panel" : "Manage Users"}
+            </button>
+          </div>
+
+          {showAdminPanel && (
+            <div
+              style={{
+                marginTop: "20px",
+                backgroundColor: "#fff5f5",
+                padding: "15px",
+                border: "1px solid #feb2b2",
+                borderRadius: "8px",
+              }}
+            >
+              <p style={{ fontSize: "0.9em", color: "#c53030" }}>
+                <strong>Security Clearance:</strong> {user.role.toUpperCase()}
+              </p>
+              <UserList />
+            </div>
+          )}
         </section>
       </Can>
     </div>

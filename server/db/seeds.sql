@@ -1,4 +1,4 @@
-TRUNCATE TABLE users, roles, permissions, role_permissions RESTART IDENTITY CASCADE;
+TRUNCATE TABLE users, roles, permissions, role_permissions, documents RESTART IDENTITY CASCADE;
 
 INSERT INTO permissions (slug, description) VALUES
   ('read:documents',   'Can view documents'),           -- ID: 1
@@ -27,6 +27,12 @@ VALUES
 
 -- Note: The password_hash below matches the string 'password123'
 INSERT INTO users (username, password_hash, role_id) VALUES 
-  ('alice_admin',  '$2b$10$Ew2k/mF/rJq.fRj/Xg5WPOa/Wvx/RzGg/w.k.F/w.k.F/w.k.F', (SELECT id FROM roles WHERE name = 'Admin')),
-  ('bob_editor',   '$2b$10$Ew2k/mF/rJq.fRj/Xg5WPOa/Wvx/RzGg/w.k.F/w.k.F/w.k.F', (SELECT id FROM roles WHERE name = 'Editor')),
-  ('charlie_view', '$2b$10$Ew2k/mF/rJq.fRj/Xg5WPOa/Wvx/RzGg/w.k.F/w.k.F/w.k.F', (SELECT id FROM roles WHERE name = 'Viewer'));
+  ('alice_admin',  '$2b$10$xKzbxFgP3TVU4PgPZ5.lYuzURSTrFAuv4Ea1J68We3b2s0zR/PtcS', (SELECT id FROM roles WHERE name = 'Admin')),
+  ('bob_editor',   '$2b$10$xKzbxFgP3TVU4PgPZ5.lYuzURSTrFAuv4Ea1J68We3b2s0zR/PtcS', (SELECT id FROM roles WHERE name = 'Editor')),
+  ('charlie_view', '$2b$10$xKzbxFgP3TVU4PgPZ5.lYuzURSTrFAuv4Ea1J68We3b2s0zR/PtcS', (SELECT id FROM roles WHERE name = 'Viewer'));
+
+INSERT INTO documents (title, content) VALUES
+  ('Project Alpha Blueprint', 'Confidential: The initial schematics for the Alpha device.'),
+  ('Q4 Financial Report', 'Revenue is up 20%. Expenses are down 5%. Bonus pool approved.'),
+  ('Employee Salaries 2025', 'RESTRICTED ACCESS: List of all employee compensation packages.'),
+  ('Lunch Menu', 'Monday: Pizza. Tuesday: Tacos. Wednesday: Salad.');

@@ -1,3 +1,5 @@
+DROP TABLE IF EXISTS documents, role_permissions, users, roles, permissions CASCADE;
+
 CREATE TABLE roles (
   id SERIAL PRIMARY KEY,
   name VARCHAR(50) UNIQUE NOT NULL,
@@ -21,4 +23,11 @@ CREATE TABLE users (
   username VARCHAR(50) UNIQUE NOT NULL,
   password_hash VARCHAR(255) NOT NULL,
   role_id INT REFERENCES roles(id)
+);
+
+CREATE TABLE documents (
+  id SERIAL PRIMARY KEY,
+  title VARCHAR(100) NOT NULL,
+  content TEXT,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
