@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
       - name: iam-server
-        image: crymall/iam-server:v4
+        image: crymall/iam-server:latest
         imagePullPolicy: Always
         ports:
         - containerPort: 3000
