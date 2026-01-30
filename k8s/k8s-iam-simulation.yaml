@@ -79,7 +79,7 @@ spec:
     spec:
       containers:
       - name: server
-        image: crymall/iam-server:v2
+        image: crymall/iam-server:v3
         imagePullPolicy: Always
         ports:
         - containerPort: 3000
