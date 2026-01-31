@@ -12,9 +12,9 @@ INSERT INTO roles (name, description) VALUES
 INSERT INTO role_permissions (role_id, permission_id)
 VALUES 
   ((SELECT id FROM roles WHERE name = 'Admin'), (SELECT id FROM permissions WHERE slug = 'read:users')),
-  ((SELECT id FROM roles WHERE name = 'Admin'), (SELECT id FROM permissions WHERE slug = 'write:users')),
+  ((SELECT id FROM roles WHERE name = 'Admin'), (SELECT id FROM permissions WHERE slug = 'write:users'));
 
-INSERT INTO users (username, password_hash, role_id) VALUES 
-  ('alice_admin',  '$2b$10$xKzbxFgP3TVU4PgPZ5.lYuzURSTrFAuv4Ea1J68We3b2s0zR/PtcS', (SELECT id FROM roles WHERE name = 'Admin')),
-  ('bob_editor',   '$2b$10$xKzbxFgP3TVU4PgPZ5.lYuzURSTrFAuv4Ea1J68We3b2s0zR/PtcS', (SELECT id FROM roles WHERE name = 'Editor')),
-  ('charlie_view', '$2b$10$xKzbxFgP3TVU4PgPZ5.lYuzURSTrFAuv4Ea1J68We3b2s0zR/PtcS', (SELECT id FROM roles WHERE name = 'Viewer'));
+INSERT INTO users (username, email, password_hash, role_id) VALUES 
+  ('alice_admin',  'reed.gaines+alice@gmail.com',   '$2b$10$xKzbxFgP3TVU4PgPZ5.lYuzURSTrFAuv4Ea1J68We3b2s0zR/PtcS', (SELECT id FROM roles WHERE name = 'Admin')),
+  ('bob_editor',   'reed.gaines+bob@gmail.com',     '$2b$10$xKzbxFgP3TVU4PgPZ5.lYuzURSTrFAuv4Ea1J68We3b2s0zR/PtcS', (SELECT id FROM roles WHERE name = 'Editor')),
+  ('charlie_view', 'reed.gaines+charlie@gmail.com', '$2b$10$xKzbxFgP3TVU4PgPZ5.lYuzURSTrFAuv4Ea1J68We3b2s0zR/PtcS', (SELECT id FROM roles WHERE name = 'Viewer'));
